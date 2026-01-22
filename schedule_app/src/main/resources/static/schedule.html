@@ -94,7 +94,7 @@
 
     .form-row {
         display: grid;
-        grid-template-columns: 1fr 1fr auto;
+        grid-template-columns: 1fr 1fr 1fr auto;
         gap: 1rem;
         align-items: end;
     }
@@ -299,6 +299,14 @@
                 <label for="date">日付</label>
                 <input type="date" id="date">
             </div>
+           <div class="form-group">
+              <label for="status">進捗</label>
+              <select id="status">
+             <option value="TODO">未着手</option>
+             <option value="IN_PROGRESS">進行中</option>
+             <option value="DONE">完了</option>
+        </select>
+         </div>
             <button class="btn" onclick="addSchedule()">追加</button>
         </div>
     </div>
@@ -332,6 +340,14 @@
                 <label for="editDate">日付</label>
                 <input type="date" id="editDate">
             </div>
+           <div class="form-group">
+  <label for="editStatus">進捗</label>
+  <select id="editStatus">
+    <option value="TODO">未着手</option>
+    <option value="IN_PROGRESS">進行中</option>
+    <option value="DONE">完了</option>
+  </select>
+</div>
             <div class="modal-actions">
                 <button class="btn btn-cancel" onclick="closeEditModal()">キャンセル</button>
                 <button class="btn" onclick="saveEdit()">保存</button>
@@ -519,3 +535,4 @@ window.onclick = function(event) {
 
 </body>
 </html>
+
