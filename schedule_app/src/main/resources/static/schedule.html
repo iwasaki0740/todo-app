@@ -422,6 +422,7 @@ async function addSchedule() {
         if (data.success) {
             document.getElementById('title').value = '';
             document.getElementById('date').value = '';
+           document.getElementById('date').value = 'TODO';
             loadSchedules();
         } else {
             alert(data.message);
@@ -432,6 +433,14 @@ async function addSchedule() {
 }
 
 async function loadSchedules() {
+   function getStatusLabel(status) {
+  const labels = {
+    TODO: '未着手',
+    IN_PROGRESS: '進行中',
+    DONE: '完了'
+  };
+  return labels[status] || '未着手';
+}
     try {
         const sortOrder = document.getElementById('sortOrder').value;
         const res = await fetch(`/api/schedules?sort=${sortOrder}`);
@@ -447,10 +456,11 @@ async function loadSchedules() {
         listContainer.innerHTML = schedules.map(schedule => `
             <div class="schedule-item">
                 <div class="schedule-date">${schedule.date || '日付未設定'}</div>
-                <div class="schedule-content">
-                    <div class="schedule-title">${escapeHtml(schedule.title || 'タイトルなし')}</div>
-                    <div class="schedule-user">${schedule.user || 'ユーザー不明'}</div>
-                </div>
+<div class="schedule-content">
+  <div class="schedule-title">${escapeHtml(schedule.title || 'タイトルなし')}</div>
+  <div class="schedule-user">${schedule.user || 'ユーザー不明'}</div>
+  <div class="schedule-user">進捗：${getStatusLabel(schedule.status)}</div>
+</div>
                 <button class="btn-small btn-edit" onclick="openEditModal(${schedule.id}, '${escapeHtml(schedule.title)}', '${schedule.date}')">編集</button>
                 <button class="btn-small btn-delete" onclick="deleteSchedule(${schedule.id})">削除</button>
             </div>
@@ -471,11 +481,12 @@ function closeEditModal() {
     editingScheduleId = null;
 }
 
-function openEditModal(id, title, date) {
-    editingScheduleId = id;
-    document.getElementById('editTitle').value = title;
-    document.getElementById('editDate').value = date;
-    document.getElementById('editModal').classList.add('show');
+function openEditModal(id, title, date, status) {
+  editingScheduleId = id;
+  document.getElementById('editTitle').value = title;
+  document.getElementById('editDate').value = date;
+  document.getElementById('editStatus').value = status || 'TODO';
+  document.getElementById('editModal').classList.add('show');
 }
 
 async function saveEdit() {
@@ -536,5 +547,6 @@ window.onclick = function(event) {
 
 </body>
 </html>
+
 
 
