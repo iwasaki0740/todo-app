@@ -492,6 +492,7 @@ function openEditModal(id, title, date, status) {
 async function saveEdit() {
     const newTitle = document.getElementById('editTitle').value;
     const newDate = document.getElementById('editDate').value;
+    const newStatus = document.getElementById('editStatus').value; // 追加
 
     if (!newTitle || !newDate) {
         alert('タイトルと日付を入力してください');
@@ -547,6 +548,7 @@ window.onclick = function(event) {
 
 </body>
 </html>
+
 
 
 
