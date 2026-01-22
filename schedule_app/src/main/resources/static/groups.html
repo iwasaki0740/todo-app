@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ管理 - Schedule App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: #1a1a1a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .logout-btn, .nav-link-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover, .nav-link-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #888;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #2c2c2c;
+            border-bottom-color: #2c2c2c;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .welcome {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .welcome h2 { color: #333; margin-bottom: 0.5rem; }
+        .user-info { color: #2c2c2c; font-weight: 600; }
+
+        .add-group {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .add-group h3 { color: #333; margin-bottom: 1.5rem; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+
+        label {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            padding: 0.875rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2c2c2c;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            background: #2c2c2c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: #3a3a3a; transform: translateY(-2px); }
+
+        .group-list, .group-tasks {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .group-header h3 { color: #333; margin: 0; }
+
+        .group-items { display: grid; gap: 1rem; }
+
+        .group-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .group-item:hover { transform: translateY(-2px); }
+
+        .group-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .group-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .group-description {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .group-meta {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 0.5rem;
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-view { background: #2196F3; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-small:hover { transform: scale(1.05); }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+
+        .task-list {
+            margin-top: 2rem;
+        }
+
+        .task-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .task-item:hover { transform: translateY(-2px); }
+
+        .task-item.help-needed {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .task-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .status-todo { background: #e9ecef; color: #495057; }
+        .status-progress { background: #ffc107; color: white; }
+        .status-done { background: #28a745; color: white; }
+
+        .task-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .task-creator {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .help-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 { color: #333; margin: 0; }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #888;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover { background: #f0f0f0; }
+
+        .modal-form { display: flex; flex-direction: column; gap: 1.5rem; }
+        .modal-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+        .modal-actions button { flex: 1; }
+        .btn-cancel { background: #6c757d; }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .group-item { grid-template-columns: 1fr; }
+            .task-item { grid-template-columns: 1fr; }
+            .nav-buttons { flex-direction: column; }
+            .tabs { gap: 0.5rem; }
+            .tab-btn { padding: 0.5rem 1rem; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        <a href="/groups.html" class="logo">Schedule App</a>
+    </div>
+    <div class="nav-buttons">
+        <button class="nav-link-btn" onclick="window.location.href='/schedule.html'">スケジュール</button>
+        <button class="logout-btn" onclick="logout()">ログアウト</button>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="welcome">
+        <h2>グループ管理 - <span class="user-info" id="currentUser">ゲスト</span>さん</h2>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('groups-tab')">グループ一覧</button>
+        <button class="tab-btn" onclick="switchTab('create-group-tab')">グループを作成</button>
+    </div>
+
+    <!-- グループ一覧タブ -->
+    <div id="groups-tab" class="tab-content active">
+        <div class="group-list">
+            <div class="group-header">
+                <h3>あなたのグループ</h3>
+            </div>
+            <div class="group-items" id="groupList"></div>
+        </div>
+    </div>
+
+    <!-- グループ作成タブ -->
+    <div id="create-group-tab" class="tab-content">
+        <div class="add-group">
+            <h3>新しいグループを作成</h3>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label for="groupName">グループ名 *</label>
+                    <input type="text" id="groupName" placeholder="例：プロジェクトA">
+                </div>
+                <div class="form-group">
+                    <label for="groupDescription">説明</label>
+                    <textarea id="groupDescription" placeholder="グループの説明を入力してください..."></textarea>
+                </div>
+                <button class="btn" onclick="createGroup()">グループを作成</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- グループ詳細モーダル -->
+<div id="groupDetailModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <h3 id="modalGroupName">グループ名</h3>
+                <p id="modalGroupDesc" style="color: #888; font-size: 0.9rem; margin-top: 0.5rem;"></p>
+            </div>
+            <button class="close-btn" onclick="closeGroupModal()">&times;</button>
+        </div>
+
+        <!-- メンバー一覧 -->
+        <div style="margin-bottom: 2rem;">
+            <h4 style="margin-bottom: 1rem;">グループメンバー</h4>
+            <div id="membersList" style="display: grid; gap: 0.5rem;"></div>
+            <div style="margin-top: 1rem;">
+                <input type="text" id="newMemberUsername" placeholder="ユーザー名を入力" style="width: 70%;">
+                <button class="btn" style="width: 28%; padding: 0.875rem;" onclick="addMemberToGroup()">追加</button>
+            </div>
+        </div>
+
+        <!-- タスク一覧 -->
+        <div style="margin-bottom: 2rem;">
+            <h4 style="margin-bottom: 1rem;">タスク一覧</h4>
+            <div id="tasksList" style="display: grid; gap: 0.5rem;"></div>
+        </div>
+
+        <!-- タスク作成 -->
+        <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+            <h4 style="margin-bottom: 1rem;">新しいタスクを追加</h4>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label for="newTaskTitle">タスク名</label>
+                <input type="text" id="newTaskTitle" placeholder="タスク名">
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label for="newTaskDescription">説明</label>
+                <textarea id="newTaskDescription" placeholder="タスクの説明" style="min-height: 60px;"></textarea>
+            </div>
+            <button class="btn" onclick="addTaskToGroup()">タスクを追加</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button class="btn btn-cancel" onclick="closeGroupModal()">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUser = null;
+let currentGroupId = null;
+
+window.onload = async function() {
+    await checkLogin();
+    if (currentUser) {
+        loadGroups();
+    }
+};
+
+function switchTab(tabName) {
+    // すべてのタブを非表示
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // すべてのボタンを非アクティブ
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    // 選択されたタブを表示
+    document.getElementById(tabName).classList.add('active');
+    
+    // 対応するボタンをアクティブにする
+    const tabMap = {
+        'groups-tab': 0,
+        'create-group-tab': 1
+    };
+    if (tabMap[tabName] !== undefined) {
+        buttons[tabMap[tabName]].classList.add('active');
+    }
+}
+
+async function checkLogin() {
+    try {
+        const res = await fetch('/api/current-user');
+        const data = await res.json();
+        
+        if (data.loggedIn) {
+            currentUser = data.username;
+            document.getElementById('currentUser').textContent = currentUser;
+        } else {
+            window.location.href = '/auth.html';
+        }
+    } catch (error) {
+        console.error('Error checking login:', error);
+        window.location.href = '/auth.html';
+    }
+}
+
+async function logout() {
+    try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/auth.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('ログアウトに失敗しました');
+    }
+}
+
+async function createGroup() {
+    const name = document.getElementById('groupName').value;
+    const description = document.getElementById('groupDescription').value;
+
+    if (!name.trim()) {
+        alert('グループ名を入力してください');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/groups', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name, description})
+        });
+
+        console.log('Response status:', res.status);
+        console.log('Response headers:', res.headers);
+
+        if (!res.ok) {
+            const text = await res.text();
+            console.error('Error response text:', text);
+            alert(`エラー: ${res.status} ${res.statusText}`);
+            return;
+        }
+
+        const data = await res.json();
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            document.getElementById('groupName').value = '';
+            document.getElementById('groupDescription').value = '';
+            switchTab('groups-tab');
+            loadGroups();
+        } else {
+            alert(data.message || 'グループ作成に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error creating group:', error);
+        console.error('Error stack:', error.stack);
+        alert('エラーが発生しました: ' + error.message);
+    }
+}
+
+async function loadGroups() {
+    try {
+        const res = await fetch('/api/groups');
+        const groups = await res.json();
+
+        const listContainer = document.getElementById('groupList');
+        
+        if (groups.length === 0) {
+            listContainer.innerHTML = '<div class="empty-state"><p>グループがまだありません。作成してください！</p></div>';
+            return;
+        }
+
+        listContainer.innerHTML = groups.map(group => `
+            <div class="group-item" onclick="openGroupModal(${group.id})">
+                <div class="group-content">
+                    <div class="group-name">${escapeHtml(group.name)}</div>
+                    <div class="group-description">${escapeHtml(group.description || '説明なし')}</div>
+                    <div class="group-meta">メンバー数: ${group.memberCount || 0}</div>
+                </div>
+                <div class="group-actions">
+                    <button class="btn-small btn-view" onclick="event.stopPropagation(); openGroupModal(${group.id})">開く</button>
+                    <button class="btn-small btn-delete" onclick="event.stopPropagation(); deleteGroup(${group.id})">削除</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading groups:', error);
+        alert('グループの読み込みに失敗しました');
+    }
+}
+
+async function openGroupModal(groupId) {
+    currentGroupId = groupId;
+    
+    try {
+        // グループ情報を取得
+        const groupRes = await fetch(`/api/groups/${groupId}`);
+        const group = groupRes.json ? await groupRes.json() : null;
+        
+        // メンバー一覧を取得
+        const membersRes = await fetch(`/api/groups/${groupId}/members`);
+        const members = await membersRes.json();
+        
+        // タスク一覧を取得
+        const tasksRes = await fetch(`/api/tasks/group/${groupId}`);
+        const tasks = await tasksRes.json();
+        
+        // モーダルの内容を更新
+        document.getElementById('modalGroupName').textContent = group?.name || 'グループ';
+        document.getElementById('modalGroupDesc').textContent = group?.description || '';
+        
+        // メンバー一覧を表示
+        const membersList = document.getElementById('membersList');
+        membersList.innerHTML = members.map(m => `
+            <div style="padding: 0.5rem; background: #f0f0f0; border-radius: 5px;">
+                ${escapeHtml(m.username)}
+            </div>
+        `).join('');
+        
+        // タスク一覧を表示
+        const tasksList = document.getElementById('tasksList');
+        if (tasks.length === 0) {
+            tasksList.innerHTML = '<p style="color: #888;">タスクがまだありません</p>';
+        } else {
+            tasksList.innerHTML = tasks.map(t => `
+                <div class="task-item ${t.isHelpNeeded ? 'help-needed' : ''}" onclick="goToTaskDetail(${t.id})">
+                    <div class="task-status status-${t.status?.toLowerCase() || 'todo'}">${getStatusLabel(t.status)}</div>
+                    <div class="task-content">
+                        <div class="task-title">
+                            ${escapeHtml(t.title)}
+                            ${t.isHelpNeeded ? '<span class="help-badge">🆘 ヘルプ求める</span>' : ''}
+                        </div>
+                        <div class="task-creator">作成者: ${escapeHtml(t.creatorUsername || '不明')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // モーダルを表示
+        document.getElementById('groupDetailModal').classList.add('show');
+    } catch (error) {
+        console.error('Error opening group:', error);
+        alert('グループ情報の読み込みに失敗しました');
+    }
+}
+
+function closeGroupModal() {
+    document.getElementById('groupDetailModal').classList.remove('show');
+    document.getElementById('newTaskTitle').value = '';
+    document.getElementById('newTaskDescription').value = '';
+    document.getElementById('newMemberUsername').value = '';
+    currentGroupId = null;
+}
+
+async function addTaskToGroup() {
+    if (!currentGroupId) return;
+    
+    const title = document.getElementById('newTaskTitle').value;
+    const description = document.getElementById('newTaskDescription').value;
+
+    if (!title.trim()) {
+        alert('タスク名を入力してください');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title, description, groupId: currentGroupId})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('newTaskTitle').value = '';
+            document.getElementById('newTaskDescription').value = '';
+            openGroupModal(currentGroupId);
+        } else {
+            alert(data.message || 'タスク作成に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error creating task:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+async function addMemberToGroup() {
+    if (!currentGroupId) return;
+    
+    const username = document.getElementById('newMemberUsername').value;
+    if (!username.trim()) {
+        alert('ユーザー名を入力してください');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/groups/${currentGroupId}/members`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('newMemberUsername').value = '';
+            openGroupModal(currentGroupId);
+        } else {
+            alert(data.message || 'メンバー追加に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error adding member:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+async function deleteGroup(groupId) {
+    if (!confirm('このグループを削除しますか？グループ内のタスクも削除されます。')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/groups/${groupId}`, {method: 'DELETE'});
+        const data = await res.json();
+        
+        if (data.success) {
+            closeGroupModal();
+            loadGroups();
+        } else {
+            alert(data.message || '削除に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error deleting group:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+function goToTaskDetail(taskId) {
+    window.location.href = `/task-detail.html?taskId=${taskId}`;
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'TODO': '未着手',
+        'IN_PROGRESS': '進行中',
+        'DONE': '完了'
+    };
+    return labels[status] || status || '未着手';
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('groupDetailModal');
+    if (event.target === modal) {
+        closeGroupModal();
+    }
+}
+</script>
+
+</body>
+</html>

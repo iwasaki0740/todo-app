@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メインメニュー - Schedule App</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f7fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    nav {
+        background: #1a1a1a;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .logo {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .logout-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+        flex: 1;
+    }
+
+    .welcome {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .welcome h2 { color: #333; margin-bottom: 0.5rem; }
+    .user-info { color: #2c2c2c; font-weight: 600; }
+
+    .add-schedule {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .add-schedule h3 { color: #333; margin-bottom: 1.5rem; }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-group { display: flex; flex-direction: column; }
+
+    label {
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 500;
+    }
+
+    input {
+        padding: 0.875rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2c2c2c;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        background: #2c2c2c;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn:hover { background: #3a3a3a; transform: translateY(-2px); }
+
+    .schedule-list {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .schedule-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .schedule-header h3 { color: #333; }
+
+    select {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .schedule-items { display: grid; gap: 1rem; }
+
+    .schedule-item {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .schedule-item:hover { transform: translateY(-2px); }
+
+    .schedule-date {
+        background: #2c2c2c;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .schedule-content { display: flex; flex-direction: column; gap: 0.25rem; }
+    .schedule-title { font-size: 1.1rem; font-weight: 600; color: #333; }
+    .schedule-user { font-size: 0.9rem; color: #888; }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform 0.2s;
+    }
+
+    .btn-edit { background: #ffc107; color: white; }
+    .btn-delete { background: #dc3545; color: white; }
+    .btn-small:hover { transform: scale(1.05); }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #888;
+    }
+
+    /* モーダル */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal.show {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        width: 90%;
+        max-width: 500px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 { color: #333; margin: 0; }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: #888;
+        cursor: pointer;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+
+    .close-btn:hover { background: #f0f0f0; }
+
+    .modal-form { display: flex; flex-direction: column; gap: 1.5rem; }
+    .modal-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+    .modal-actions button { flex: 1; }
+    .btn-cancel { background: #6c757d; }
+
+    @media (max-width: 768px) {
+        .hamburger { display: flex; }
+        .form-row { grid-template-columns: 1fr; }
+        .schedule-item { grid-template-columns: 1fr; }
+        .schedule-date { width: 100%; }
+    }
+</style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <a href="/schedule.html" class="logo">Schedule App</a>
+    </div>
+    <button class="logout-btn" onclick="logout()">ログアウト</button>
+    <button onclick="window.location.href='/groups.html'">グループを見る</button>
+</nav>
+
+<div class="container">
+    <div class="welcome">
+        <h2>ようこそ、<span class="user-info" id="currentUser">ゲスト</span>さん！</h2>
+    </div>
+
+    <div class="add-schedule">
+        <h3>新しいスケジュールを追加</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="title">タイトル</label>
+                <input type="text" id="title" placeholder="スケジュールのタイトル">
+            </div>
+            <div class="form-group">
+                <label for="date">日付</label>
+                <input type="date" id="date">
+            </div>
+            <button class="btn" onclick="addSchedule()">追加</button>
+        </div>
+    </div>
+
+    <div class="schedule-list">
+        <div class="schedule-header">
+            <h3>スケジュール一覧</h3>
+            <div>
+                <select id="sortOrder" onchange="loadSchedules()">
+                    <option value="desc">新しい順</option>
+                    <option value="asc">古い順</option>
+                </select>
+            </div>
+        </div>
+        <div class="schedule-items" id="scheduleList"></div>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>スケジュールを編集</h3>
+            <button class="close-btn" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-form">
+            <div class="form-group">
+                <label for="editTitle">タイトル</label>
+                <input type="text" id="editTitle" placeholder="スケジュールのタイトル">
+            </div>
+            <div class="form-group">
+                <label for="editDate">日付</label>
+                <input type="date" id="editDate">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeEditModal()">キャンセル</button>
+                <button class="btn" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUser = null;
+let editingScheduleId = null;
+
+window.onload = async function() {
+    await checkLogin();
+    if (currentUser) {
+        loadSchedules();
+    }
+};
+
+function toggleMenu() {}
+
+async function checkLogin() {
+    try {
+        const res = await fetch('/api/current-user');
+        const data = await res.json();
+        
+        console.log('Current user response:', data);
+        
+        if (data.loggedIn) {
+            currentUser = data.username;
+            document.getElementById('currentUser').textContent = currentUser;
+        } else {
+            window.location.href = '/auth.html';
+        }
+    } catch (error) {
+        console.error('Error checking login:', error);
+        window.location.href = '/auth.html';
+    }
+}
+
+async function logout() {
+    try {
+        const res = await fetch('/api/logout', { method: 'POST' });
+        const data = await res.json();
+        console.log('Logout response:', data);
+        window.location.href = '/auth.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('ログアウトに失敗しました');
+    }
+}
+
+async function addSchedule() {
+    const title = document.getElementById('title').value;
+    const date = document.getElementById('date').value;
+
+    if (!title || !date) {
+        alert('タイトルと日付を入力してください');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/schedules', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title, date})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('title').value = '';
+            document.getElementById('date').value = '';
+            loadSchedules();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('エラーが発生しました');
+    }
+}
+
+async function loadSchedules() {
+    try {
+        const sortOrder = document.getElementById('sortOrder').value;
+        const res = await fetch(`/api/schedules?sort=${sortOrder}`);
+        const schedules = await res.json();
+
+        const listContainer = document.getElementById('scheduleList');
+        
+        if (schedules.length === 0) {
+            listContainer.innerHTML = '<div class="empty-state"><p>スケジュールがありません</p></div>';
+            return;
+        }
+
+        listContainer.innerHTML = schedules.map(schedule => `
+            <div class="schedule-item">
+                <div class="schedule-date">${schedule.date || '日付未設定'}</div>
+                <div class="schedule-content">
+                    <div class="schedule-title">${escapeHtml(schedule.title || 'タイトルなし')}</div>
+                    <div class="schedule-user">${schedule.user || 'ユーザー不明'}</div>
+                </div>
+                <button class="btn-small btn-edit" onclick="openEditModal(${schedule.id}, '${escapeHtml(schedule.title)}', '${schedule.date}')">編集</button>
+                <button class="btn-small btn-delete" onclick="deleteSchedule(${schedule.id})">削除</button>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading schedules:', error);
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('show');
+    editingScheduleId = null;
+}
+
+function openEditModal(id, title, date) {
+    editingScheduleId = id;
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editDate').value = date;
+    document.getElementById('editModal').classList.add('show');
+}
+
+async function saveEdit() {
+    const newTitle = document.getElementById('editTitle').value;
+    const newDate = document.getElementById('editDate').value;
+
+    if (!newTitle || !newDate) {
+        alert('タイトルと日付を入力してください');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/schedules/${editingScheduleId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({title: newTitle, date: newDate})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            closeEditModal();
+            loadSchedules();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('エラーが発生しました');
+    }
+}
+
+async function deleteSchedule(id) {
+    if (!confirm('このスケジュールを削除しますか？')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/schedules/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        
+        if (data.success) {
+            loadSchedules();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('エラーが発生しました');
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target === modal) {
+        closeEditModal();
+    }
+}
+</script>
+
+</body>
+</html>

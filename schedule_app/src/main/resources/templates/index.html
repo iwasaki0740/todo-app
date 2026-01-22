@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Schedule App</title>
+</head>
+<body>
+<h1>タスク一覧</h1>
+
+<form action="/add" method="post">
+    タイトル: <input type="text" name="title"><br>
+    日付: <input type="date" name="date"><br>
+    <button type="submit">追加</button>
+</form>
+
+<hr>
+
+<table border="1">
+    <tr><th>ID</th><th>タイトル</th><th>日付</th><th>削除</th></tr>
+    <tr th:each="t : ${tasks}">
+        <td th:text="${t.id}"></td>
+        <td th:text="${t.title}"></td>
+        <td th:text="${t.date}"></td>
+        <td>
+            <form th:action="@{'/delete/' + ${t.id}}" method="post">
+                <button type="submit">削除</button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>スケジュール管理</title>
+<style>
+    body { font-family: Arial; padding:30px; background:#f8f8f8; font-size:20px; }
+    h1,h2 { font-size:28px; }
+    input,button { font-size:20px; padding:12px; margin:8px 0; }
+    #schedule-list { margin-top:30px; font-size:22px; }
+    .item { padding:12px; background:white; margin-bottom:10px; border-radius:8px; box-shadow:0 0 5px #ccc; }
+</style>
+</head>
+<body>
+
+<h1>スケジュール管理アプリ</h1>
+
+<h2>ユーザー登録</h2>
+<input id="newUser" placeholder="新しいユーザー名">
+<button onclick="register()">登録</button>
+
+<h2>ログイン / ログアウト</h2>
+<input id="user" placeholder="ユーザー名">
+<button onclick="login()">ログイン</button>
+<button onclick="logout()">ログアウト</button>
+
+<h2>新規スケジュール追加</h2>
+<input id="title" placeholder="タイトル">
+<input id="date" type="date">
+<button onclick="addSchedule()">追加</button>
+
+<h2>登録済みスケジュール</h2>
+<div id="schedule-list"></div>
+<button onclick="deleteAll()">全削除</button>
+
+<script>
+async function register() {
+    const user = document.getElementById('newUser').value;
+    const res = await fetch("/api/user/register", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({user})});
+    alert(await res.text());
+}
+
+async function login() {
+    const user = document.getElementById('user').value;
+    const res = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({user})});
+    alert(await res.text());
+    loadSchedules();
+}
+
+async function logout() {
+    const res = await fetch("/api/logout", { method:"POST" });
+    alert(await res.text());
+    document.getElementById("schedule-list").innerHTML="";
+}
+
+async function addSchedule() {
+    const title = document.getElementById('title').value;
+    const date = document.getElementById('date').value;
+    const res = await fetch("/api/schedules", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({title,date})});
+    alert(await res.text());
+    loadSchedules();
+}
+
+async function loadSchedules() {
+    const res = await fetch("/api/schedules");
+    const list = await res.json();
+    const area = document.getElementById("schedule-list");
+    area.innerHTML="";
+    list.forEach(item=>{
+        area.innerHTML+=`<div class="item"><b>${item.title}</b> — ${item.date}</div>`;
+    });
+}
+
+async function deleteAll() {
+    const res = await fetch("/api/schedules", { method:"DELETE" });
+    alert(await res.text());
+    loadSchedules();
+}
+
+loadSchedules();
+</script>
+
+</body>
+</html>

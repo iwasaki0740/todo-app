@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>認証 - Schedule App</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f7fa;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ナビゲーション */
+    nav {
+        background: #1a1a1a;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .logo {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.3s;
+    }
+
+    .nav-links a:hover {
+        opacity: 0.7;
+    }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 5px;
+    }
+
+    .hamburger span {
+        width: 25px;
+        height: 3px;
+        background: white;
+        transition: 0.3s;
+    }
+
+    /* コンテンツエリア */
+    .container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .auth-container {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .auth-tabs {
+        display: flex;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        border-bottom: 3px solid transparent;
+        color: #888;
+        font-weight: 600;
+    }
+
+    .tab.active {
+        color: #2c2c2c;
+        border-bottom-color: #2c2c2c;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 500;
+    }
+
+    input {
+        width: 100%;
+        padding: 0.875rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2c2c2c;
+    }
+
+    button {
+        width: 100%;
+        padding: 1rem;
+        background: #2c2c2c;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+        background: #3a3a3a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    .message {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 10px;
+        display: none;
+    }
+
+    .message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+        .nav-links {
+            position: fixed;
+            right: -100%;
+            top: 60px;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%;
+            padding: 2rem;
+            transition: right 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-links.active {
+            right: 0;
+        }
+
+        .nav-links a {
+            color: #667eea;
+        }
+
+        .hamburger {
+            display: flex;
+        }
+
+        .auth-container {
+            padding: 2rem;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<nav>
+    <a href="/" class="logo">Schedule App</a>
+</nav>
+
+<!-- メインコンテンツ -->
+<div class="container">
+    <div class="auth-container">
+        <!-- タブ -->
+        <div class="auth-tabs">
+            <div class="tab active" onclick="switchTab('login')">ログイン</div>
+            <div class="tab" onclick="switchTab('register')">新規登録</div>
+        </div>
+
+        <!-- ログインフォーム -->
+        <div id="login" class="tab-content active">
+            <h2>ログイン</h2>
+            <div class="form-group">
+                <label for="loginUsername">ユーザー名</label>
+                <input type="text" id="loginUsername" placeholder="ユーザー名を入力">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">パスワード</label>
+                <input type="password" id="loginPassword" placeholder="パスワードを入力">
+            </div>
+            <button onclick="login()">ログイン</button>
+            <div class="message" id="loginMessage"></div>
+        </div>
+
+        <!-- 新規登録フォーム -->
+        <div id="register" class="tab-content">
+            <h2>新規登録</h2>
+            <div class="form-group">
+                <label for="regUsername">ユーザー名</label>
+                <input type="text" id="regUsername" placeholder="ユーザー名を入力">
+            </div>
+            <div class="form-group">
+                <label for="regPassword">パスワード</label>
+                <input type="password" id="regPassword" placeholder="パスワードを入力">
+            </div>
+            <div class="form-group">
+                <label for="regPasswordConfirm">パスワード確認</label>
+                <input type="password" id="regPasswordConfirm" placeholder="もう一度パスワードを入力">
+            </div>
+            <button onclick="register()">登録</button>
+            <div class="message" id="registerMessage"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('active');
+}
+
+function switchTab(tab) {
+    // タブの切り替え
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tab).classList.add('active');
+}
+
+function showMessage(elementId, message, isSuccess) {
+    const msg = document.getElementById(elementId);
+    msg.textContent = message;
+    msg.className = 'message ' + (isSuccess ? 'success' : 'error');
+    msg.style.display = 'block';
+    
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 5000);
+}
+
+async function login() {
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) {
+        showMessage('loginMessage', 'ユーザー名とパスワードを入力してください', false);
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            showMessage('loginMessage', 'ログイン成功！', true);
+            setTimeout(() => {
+                window.location.href = '/schedule.html';
+            }, 1000);
+        } else {
+            showMessage('loginMessage', data.message, false);
+        }
+    } catch (error) {
+        showMessage('loginMessage', 'エラーが発生しました', false);
+    }
+}
+
+async function register() {
+    const username = document.getElementById('regUsername').value;
+    const password = document.getElementById('regPassword').value;
+    const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+
+    if (!username || !password || !passwordConfirm) {
+        showMessage('registerMessage', 'すべての項目を入力してください', false);
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        showMessage('registerMessage', 'パスワードが一致しません', false);
+        return;
+    }
+
+    if (password.length < 4) {
+        showMessage('registerMessage', 'パスワードは4文字以上にしてください', false);
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/user/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            showMessage('registerMessage', '登録成功！ログインしてください', true);
+            // フォームをクリア
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+            
+            // ログインタブに切り替え
+            setTimeout(() => {
+                switchTab('login');
+            }, 1500);
+        } else {
+            showMessage('registerMessage', data.message, false);
+        }
+    } catch (error) {
+        showMessage('registerMessage', 'エラーが発生しました', false);
+    }
+}
+</script>
+
+</body>
+</html>

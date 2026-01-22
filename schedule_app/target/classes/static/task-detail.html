@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク詳細 - Schedule App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: #1a1a1a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link-btn, .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .nav-link-btn:hover, .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            color: #2c2c2c;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .task-detail {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .task-title-section h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .task-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .meta-item {
+            color: #666;
+        }
+
+        .meta-item strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .task-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .task-status {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .status-todo {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .status-progress {
+            background: #ffc107;
+            color: white;
+        }
+
+        .status-done {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 100;
+            min-width: 150px;
+            top: 100%;
+            right: 0;
+        }
+
+        .status-menu.show {
+            display: block;
+        }
+
+        .status-option {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .status-option:hover {
+            background: #f0f0f0;
+        }
+
+        .status-option:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .status-option:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .help-button {
+            padding: 0.75rem 1.5rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .help-button:hover {
+            background: #ff5252;
+        }
+
+        .help-button.active {
+            background: #28a745;
+        }
+
+        .help-button.active:hover {
+            background: #228b3f;
+        }
+
+        .task-description {
+            margin-bottom: 2rem;
+        }
+
+        .task-description h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .description-text {
+            color: #666;
+            line-height: 1.6;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .help-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .help-section h2 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-section p {
+            color: #856404;
+            margin-bottom: 1rem;
+        }
+
+        .messages-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .messages-section h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .message-list {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .message-box {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2c2c2c;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #2196F3;
+            margin-bottom: 0.25rem;
+        }
+
+        .message-time {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-text {
+            color: #333;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .message-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        textarea {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #2c2c2c;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            background: #2c2c2c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #3a3a3a;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .task-header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .task-title-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .message-list {
+                max-height: 300px;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        <a href="/groups.html" class="logo">Schedule App</a>
+    </div>
+    <div class="nav-buttons">
+        <button class="nav-link-btn" onclick="window.location.href='/schedule.html'">スケジュール</button>
+        <button class="nav-link-btn" onclick="window.location.href='/groups.html'">グループ</button>
+        <button class="logout-btn" onclick="logout()">ログアウト</button>
+    </div>
+</nav>
+
+<div class="container">
+    <a href="/groups.html" class="back-btn">← グループに戻る</a>
+
+    <div class="task-detail">
+        <div class="task-header">
+            <div class="task-title-section">
+                <h1 id="taskTitle">タスク名</h1>
+                <div class="task-meta">
+                    <div class="meta-item">
+                        <strong>グループ:</strong> <span id="groupName">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>作成者:</strong> <span id="creatorName">-</span>
+                    </div>
+                    <div class="meta-item">
+                        <strong>作成日:</strong> <span id="createdDate">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="task-controls">
+                <div class="status-dropdown">
+                    <button class="task-status" id="statusBtn" onclick="toggleStatusMenu()">
+                        <span id="statusLabel">未着手</span>
+                    </button>
+                    <div class="status-menu" id="statusMenu">
+                        <button class="status-option" onclick="updateStatus('TODO')">未着手</button>
+                        <button class="status-option" onclick="updateStatus('IN_PROGRESS')">進行中</button>
+                        <button class="status-option" onclick="updateStatus('DONE')">完了</button>
+                    </div>
+                </div>
+                <button class="help-button" id="helpBtn" onclick="toggleHelpFlag()">
+                    <span id="helpBtnText">🆘 ヘルプを求める</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="task-description">
+            <h3>説明</h3>
+            <div class="description-text" id="descriptionText">
+                説明がありません
+            </div>
+        </div>
+    </div>
+
+    <!-- ヘルプセクション -->
+    <div id="helpSection" style="display: none;" class="help-section">
+        <h2>🆘 ヘルプが求められています</h2>
+        <p>このタスクに対してグループメンバーから支援を受けることができます。下のメッセージ欄を使用して質問や相談をしてください。</p>
+    </div>
+
+    <!-- メッセージセクション -->
+    <div id="messagesSection" style="display: none;" class="messages-section">
+        <h3>メッセージ</h3>
+        
+        <div class="message-list" id="messagesList">
+            <div class="loading">メッセージを読み込み中...</div>
+        </div>
+
+        <div class="message-form">
+            <textarea id="messageInput" placeholder="メッセージを入力してください..."></textarea>
+            <button class="btn" onclick="sendMessage()">送信</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUser = null;
+let currentTask = null;
+let taskId = null;
+
+window.onload = async function() {
+    taskId = new URLSearchParams(window.location.search).get('taskId');
+    
+    if (!taskId) {
+        alert('タスクIDが指定されていません');
+        window.location.href = '/groups.html';
+        return;
+    }
+
+    await checkLogin();
+    if (currentUser) {
+        await loadTask();
+    }
+};
+
+async function checkLogin() {
+    try {
+        const res = await fetch('/api/current-user');
+        const data = await res.json();
+        
+        if (data.loggedIn) {
+            currentUser = data.username;
+        } else {
+            window.location.href = '/auth.html';
+        }
+    } catch (error) {
+        console.error('Error checking login:', error);
+        window.location.href = '/auth.html';
+    }
+}
+
+async function logout() {
+    try {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/auth.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('ログアウトに失敗しました');
+    }
+}
+
+async function loadTask() {
+    try {
+        const res = await fetch(`/api/tasks/${taskId}`);
+        const task = await res.json();
+        
+        if (!task || !task.id) {
+            alert('タスクが見つかりません');
+            window.location.href = '/groups.html';
+            return;
+        }
+
+        currentTask = task;
+
+        // タスク情報を表示
+        document.getElementById('taskTitle').textContent = escapeHtml(task.title);
+        document.getElementById('creatorName').textContent = escapeHtml(task.creatorUsername || '不明');
+        document.getElementById('createdDate').textContent = formatDate(task.createdAt);
+        document.getElementById('descriptionText').textContent = escapeHtml(task.description) || '説明がありません';
+        
+        // ステータスを表示
+        updateStatusDisplay(task.status);
+        
+        // ヘルプフラグをチェック
+        if (task.isHelpNeeded) {
+            document.getElementById('helpSection').style.display = 'block';
+            document.getElementById('messagesSection').style.display = 'block';
+            updateHelpButtonDisplay(true);
+            await loadMessages();
+        } else {
+            document.getElementById('helpSection').style.display = 'none';
+            document.getElementById('messagesSection').style.display = 'none';
+            updateHelpButtonDisplay(false);
+        }
+    } catch (error) {
+        console.error('Error loading task:', error);
+        alert('タスクの読み込みに失敗しました');
+    }
+}
+
+function updateStatusDisplay(status) {
+    const statusLabel = {
+        'TODO': '未着手',
+        'IN_PROGRESS': '進行中',
+        'DONE': '完了'
+    };
+
+    const btn = document.getElementById('statusBtn');
+    btn.className = `task-status status-${(status || 'TODO').toLowerCase()}`;
+    document.getElementById('statusLabel').textContent = statusLabel[status] || status;
+}
+
+function updateHelpButtonDisplay(isHelpNeeded) {
+    const btn = document.getElementById('helpBtn');
+    const text = document.getElementById('helpBtnText');
+    
+    if (isHelpNeeded) {
+        btn.classList.add('active');
+        text.textContent = '✓ ヘルプが有効です';
+    } else {
+        btn.classList.remove('active');
+        text.textContent = '🆘 ヘルプを求める';
+    }
+}
+
+function toggleStatusMenu() {
+    const menu = document.getElementById('statusMenu');
+    menu.classList.toggle('show');
+}
+
+async function updateStatus(newStatus) {
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/status`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: newStatus})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            currentTask.status = newStatus;
+            updateStatusDisplay(newStatus);
+            document.getElementById('statusMenu').classList.remove('show');
+        } else {
+            alert(data.message || '更新に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error updating status:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+async function toggleHelpFlag() {
+    const newValue = currentTask.isHelpNeeded ? 0 : 1;
+    
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/help-flag`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({isHelpNeeded: newValue})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            currentTask.isHelpNeeded = newValue;
+            
+            if (newValue) {
+                document.getElementById('helpSection').style.display = 'block';
+                document.getElementById('messagesSection').style.display = 'block';
+                updateHelpButtonDisplay(true);
+                await loadMessages();
+            } else {
+                document.getElementById('helpSection').style.display = 'none';
+                document.getElementById('messagesSection').style.display = 'none';
+                updateHelpButtonDisplay(false);
+                document.getElementById('messagesList').innerHTML = '';
+                document.getElementById('messageInput').value = '';
+            }
+        } else {
+            alert(data.message || '更新に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error toggling help flag:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+async function loadMessages() {
+    try {
+        const res = await fetch(`/api/help-messages/task/${taskId}`);
+        const messages = await res.json();
+
+        const messagesList = document.getElementById('messagesList');
+        
+        if (messages.length === 0) {
+            messagesList.innerHTML = '<div class="empty-state">メッセージはまだありません</div>';
+            return;
+        }
+
+        messagesList.innerHTML = messages.map(m => `
+            <div class="message-box">
+                <div class="message-author">${escapeHtml(m.senderUsername)}</div>
+                <div class="message-time">${formatDate(m.createdAt)}</div>
+                <div class="message-text">${escapeHtml(m.message)}</div>
+            </div>
+        `).join('');
+
+        // スクロール位置を下に
+        messagesList.scrollTop = messagesList.scrollHeight;
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        document.getElementById('messagesList').innerHTML = '<div class="empty-state">メッセージの読み込みに失敗しました</div>';
+    }
+}
+
+async function sendMessage() {
+    const message = document.getElementById('messageInput').value;
+    
+    if (!message.trim()) {
+        alert('メッセージを入力してください');
+        return;
+    }
+
+    if (!currentTask.isHelpNeeded) {
+        alert('ヘルプが有効になっていません');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/help-messages', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({taskId, message})
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+            document.getElementById('messageInput').value = '';
+            await loadMessages();
+        } else {
+            alert(data.message || 'メッセージ送信に失敗しました');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleString('ja-JP', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+// モーダルの外をクリックで閉じる
+window.onclick = function(event) {
+    const menu = document.getElementById('statusMenu');
+    if (event.target !== document.getElementById('statusBtn')) {
+        menu.classList.remove('show');
+    }
+}
+</script>
+
+</body>
+</html>
