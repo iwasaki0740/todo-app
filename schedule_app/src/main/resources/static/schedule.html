@@ -401,20 +401,21 @@ async function logout() {
 }
 
 async function addSchedule() {
-    const title = document.getElementById('title').value;
-    const date = document.getElementById('date').value;
+  const title = document.getElementById('title').value;
+  const date = document.getElementById('date').value;
+  const status = document.getElementById('status').value; // 追加
 
-    if (!title || !date) {
-        alert('タイトルと日付を入力してください');
-        return;
-    }
+  if (!title || !date) {
+    alert('タイトルと日付を入力してください');
+    return;
+  }
 
-    try {
-        const res = await fetch('/api/schedules', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({title, date})
-        });
+  try {
+    const res = await fetch('/api/schedules', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ title, date, status }) // ここも変更
+    });
 
         const data = await res.json();
         
@@ -535,4 +536,5 @@ window.onclick = function(event) {
 
 </body>
 </html>
+
 
